@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <style>
+      .t{font: 900 62px 'Abril Fatface', serif;}
+    </style>
+  </defs>
+  <rect width="128" height="128" rx="24" fill="#fff" />
+  <g fill="#111">
+    <text x="20" y="78" class="t">CO</text>
+    <text x="78" y="44" font-family="Inter, Arial, sans-serif" font-size="16">2</text>
+  </g>
+</svg>
+
+
