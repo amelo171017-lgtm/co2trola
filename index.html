@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>CO₂ntrola - São Paulo</title>
+    
+    <link rel="icon" type="image/png" href="./assets/icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    
+    <link rel="stylesheet" href="./styles.css" />
+    <meta name="theme-color" content="#00d4aa" />
+	<link rel="manifest" href="./manifest.json"/>
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="CO₂ntrola - SP" />
+    <link rel="apple-touch-icon" href="./assets/icon.png" />
+</head>
+<body>
+<canvas id="backgroundCanvas" style="position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1;"></canvas>
+    <main id="app" class="container" role="application">
+        <header class="hero" role="banner">
+            <div class="app-icon-container">
+                <img class="app-icon" src="./assets/icon.png" alt="Ícone do CO₂ntrola" />
+                <div class="weather-badge hidden" id="weather-badge">
+                    <span id="weather-temp">--°</span>
+                </div>
+            </div>
+            <h1 class="logo" aria-label="CO2trola">
+                CO<span class="sub">2</span>trola
+            </h1>
+            <p class="tag">
+                Monitore a qualidade do ar em São Paulo usando apenas o microfone do seu celular. 
+                Tecnologia única adaptada para a realidade paulistana.
+            </p>
+        </header>
+        <section class="indices" aria-labelledby="indices-title">
+            <h2 id="indices-title" class="section-title">Qualidade do Ar em SP</h2>
+            <div class="index-header">
+                <span class="index-label">Nível</span>
+                <span class="index-label">Recomendações</span>
+            </div>
+            <ul class="index-list">
+                <li data-color="#00d4aa" data-level="excelente">
+                    <div class="index-info">
+                        <span class="dot" style="--c: #00d4aa"></span>
+                        <strong>Excelente</strong>
+                    </div>
+                    <span class="index-desc">Padrão CETESB - ambiente muito saudável</span>
+                </li>
+                <li data-color="#2ecc71" data-level="boa">
+                    <div class="index-info">
+                        <span class="dot" style="--c: #2ecc71"></span>
+                        <strong>Boa</strong>
+                    </div>
+                    <span class="index-desc">Adequado para permanência</span>
+                </li>
+                <li data-color="#f1c40f" data-level="moderada">
+                    <div class="index-info">
+                        <span class="dot" style="--c: #f1c40f"></span>
+                        <strong>Moderada</strong>
+                    </div>
+                    <span class="index-desc">Atenção à ventilação</span>
+                </li>
+                <li data-color="#e67e22" data-level="ruim">
+                    <div class="index-info">
+                        <span class="dot" style="--c: #e67e22"></span>
+                        <strong>Ruim</strong>
+                    </div>
+                    <span class="index-desc">Ventilar e reduzir fontes</span>
+                </li>
+                <li data-color="#e74c3c" data-level="muito-ruim">
+                    <div class="index-info">
+                        <span class="dot" style="--c: #e74c3c"></span>
+                        <strong>Muito Ruim</strong>
+                    </div>
+                    <span class="index-desc">Agir imediatamente</span>
+                </li>
+            </ul>
+        </section>
+        <section class="stats" aria-labelledby="stats-title">
+            <h2 id="stats-title" class="sr-only">Estatísticas Rápidas</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-value" id="external-aqi">--</span>
+                    <span class="stat-label">Qualidade Externa</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="humidity">--%</span>
+                    <span class="stat-label">Umidade</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="last-update">--:--</span>
+                    <span class="stat-label">Atualizado</span>
+                </div>
+            </div>
+        </section>
+        <section class="content" role="region" aria-labelledby="cta-title">
+            <h2 id="cta-title" class="sr-only">Medir Qualidade do Ar</h2>
+            <button id="btn-open-modal" class="cta" type="button">
+                <span class="cta-icon">📱</span>
+                Medir Qualidade do Ar Interno
+            </button>
+        </section>
+        <section id="measuring" class="measuring hidden" aria-live="polite">
+            <div class="progress-wrap">
+                <div class="progress-header">
+                    <h3>Analisando Ambiente</h3>
+                    <span class="progress-percent" id="progress-percent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <span class="progress" id="progress-bar"></span>
+                </div>
+                <p id="measure-status" class="measure-status">Iniciando análise...</p>
+                <div class="sensor-data">
+                    <div class="sensor-item">
+                        <span class="sensor-label">Sensores Ativos</span>
+                        <span class="sensor-value" id="sensors-active">3/5</span>
+                    </div>
+                    <div class="sensor-item">
+                        <span class="sensor-label">Confiança</span>
+                        <span class="sensor-value" id="confidence-level">85%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <section id="result" class="result hidden" aria-live="polite">
+            <div class="result-card">
+                <div class="result-header">
+                    <p class="result-label">Índice de Qualidade do Ar Interno</p>
+                    <p id="result-title" class="result-title">—</p>
+                    <div class="result-meta">
+                        <span id="result-location" class="result-meta-item">São Paulo</span>
+                        <span id="result-time" class="result-meta-item">Agora</span>
+                    </div>
+                </div>
+                
+                <div class="result-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Nível de Confiança</span>
+                        <span class="detail-value" id="result-confidence">87%</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Recomendações</span>
+                    </div>
+                </div>
+                
+                <ul id="result-tips" class="tips"></ul>
+                
+                <div class="result-actions">
+                    <button id="btn-save" class="btn-secondary">
+                        💾 Salvar Resultado
+                    </button>
+                    <button id="btn-new" class="btn-primary">
+                        🔄 Nova Medição
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <footer class="foot" role="contentinfo">
+            <div class="footer-content">
+                <small>© <span id="year"></span> CO₂ntrola - Soluções para o ar paulistano</small>
+                <button id="btn-settings" class="btn-settings" aria-label="Configurações">
+                    ⚙️
+                </button>
+            </div>
+        </footer>
+    </main>
+
+    <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal__box">
+            <h3 id="modal-title">📊 Medição de Qualidade do Ar</h3>
+            
+            <div class="modal-section">
+                <h4>📍 Localização em São Paulo</h4>
+                <div class="input-group">
+                    <label for="city-region">Região:</label>
+                    <select id="city-region">
+                        <option value="centro">Centro (Sé, República)</option>
+                        <option value="zona-sul">Zona Sul</option>
+                        <option value="zona-leste">Zona Leste</option>
+                        <option value="zona-oeste">Zona Oeste</option>
+                        <option value="zona-norte">Zona Norte</option>
+                        <option value="abc">ABC Paulista</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <h4>🏠 Tipo de Ambiente</h4>
+                <div class="input-group">
+                    <label for="environment-type">Ambiente:</label>
+                    <select id="environment-type">
+                        <option value="casa">Casa/Residência</option>
+                        <option value="escritorio">Escritório</option>
+                        <option value="escola">Escola</option>
+                        <option value="comercio">Comércio</option>
+                        <option value="industria">Indústria</option>
+                        <option value="outro">Outro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <h4>📋 Informações Adicionais</h4>
+                <div class="input-group">
+                    <label for="room-size">Tamanho do Ambiente:</label>
+                    <select id="room-size">
+                        <option value="pequeno">Pequeno (&lt;20m²)</option>
+                        <option value="medio">Médio (20-50m²)</option>
+                        <option value="grande">Grande (&gt;50m²)</option>
+                    </select>
+                </div>
+                
+                <div class="input-group">
+                    <label for="ventilation">Ventilação:</label>
+                    <select id="ventilation">
+                        <option value="baixa">Baixa</option>
+                        <option value="media">Média</option>
+                        <option value="alta">Alta</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="modal-info">
+                <p>⏱️ <strong>Duração:</strong> 30s a 1min30s</p>
+                <p>📱 <strong>Requisitos:</strong> Mantenha o celular parado e evite falar</p>
+                <p>🔬 <strong>Tecnologia:</strong> Análise acústica validada com dados CETESB</p>
+            </div>
+
+            <div class="modal__actions">
+                <button id="btn-cancel" class="btn-secondary" type="button">
+                    Cancelar
+                </button>
+                <button id="btn-start" class="btn-primary" type="button">
+                    🎯 Iniciar Medição
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settings-modal-title">
+        <div class="modal__box">
+            <h3 id="settings-modal-title">⚙️ Configurações</h3>
+            
+            <div class="settings-section">
+                <h4>🌐 Dados Externos</h4>
+                <div class="setting-item">
+                    <label class="toggle">
+                        <input type="checkbox" id="weather-data" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Atualizar dados do clima automaticamente</span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="toggle">
+                        <input type="checkbox" id="use-meteoblue" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Usar API Meteoblue para dados externos</span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <label class="toggle">
+                        <input type="checkbox" id="aq-alerts" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Alertas de qualidade do ar</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal__actions">
+                <button id="btn-close-settings" class="btn-primary">
+                    ✅ Salvar
+                </button>
+            </div>
+        </div>
+    </div>
+	<script src="./js/config.js"></script>
+	<script src="./js/meteoblue.js"></script>
+	<script src="./js/app.js"></script>
+	<script src="./js/measurement.js"></script>
+	<script src="./js/external-data.js"></script>
+	<script src="./js/ui.js"></script>
+	<script src="./js/canvas-background.js"></script>
+	<script>
+		let shiftCount = 0;
+		let lastPressTime = 0;
+
+		document.addEventListener("keydown", (event) => {
+		  if (event.key === "Shift") {
+			const now = Date.now();
+
+			if (now - lastPressTime > 800) {
+			  shiftCount = 0;
+			}
+
+			shiftCount++;
+			lastPressTime = now;
+
+			if (shiftCount === 1) {
+			  shiftCount = 0;
+			  window.open("https://www.canva.com/design/DAG1rw6rVYQ/2ASUr9P4Snip0nfQ_LqIIw/edit?utm_content=DAG1rw6rVYQ&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton", "_blank"); // <-- altere o link aqui
+			}
+		  }
+		});
+		console.log('Região atual:', USER_SETTINGS.region);
+    </script>
+</body>
+</html>
