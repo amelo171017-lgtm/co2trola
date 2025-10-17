@@ -1,6 +1,6 @@
 {
-    "name": "CO₂trola",
-    "short_name": "CO₂trola",
+    "name": "CO₂ntrola",
+    "short_name": "CO₂ntrola",
     "description": "Medidor de qualidade do ar usando microfone do celular",
     "start_url": "./index.html",
     "display": "standalone",
@@ -19,4 +19,5 @@
         "type": "image/png"
       }
     ]
+
   }
