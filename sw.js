@@ -1,4 +1,4 @@
-const CACHE_NAME = 'co2trola-v1';
+const CACHE_NAME = 'co2ntrola-v1';
 const urlsToCache = [
   './',
   './index.html',
@@ -40,3 +40,4 @@ self.addEventListener('activate', event => {
     })
   );
 });
+
